@@ -1,4 +1,4 @@
-# 🎄 Christmas Testimony App
+# 🎄 End of Year Testimony App
 
 A beautiful, real-time testimony sharing system for church Christmas services.
 
