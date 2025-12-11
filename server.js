@@ -110,8 +110,19 @@ app.get('/api/active', async (req, res) => {
 // Set active testimony
 app.post('/api/active', async (req, res) => {
     try {
-        const { id } = req.body;
-        const active = { id: id || null };
+        const { id, isRainActive } = req.body;
+        
+        // Read current state first to merge if needed
+        let current = {};
+        try {
+             current = JSON.parse(await fs.readFile(ACTIVE_FILE, 'utf8'));
+        } catch {}
+
+        const active = { 
+            id: id !== undefined ? id : current.id, 
+            isRainActive: isRainActive !== undefined ? isRainActive : (current.isRainActive !== undefined ? current.isRainActive : true)
+        };
+        
         await fs.writeFile(ACTIVE_FILE, JSON.stringify(active, null, 2));
         res.json({ success: true, data: active });
     } catch (error) {

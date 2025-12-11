@@ -335,6 +335,53 @@
             background: red;
         }
 
+        /* Action Buttons Container on Card */
+        .card-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .btn-delete:hover {
+            background: #ef4444;
+        }
+
+        .btn-edit:hover {
+            background: #3b82f6;
+        }
+
+        .btn-close:hover {
+            background: #f59e0b;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
         /* --- Projector / Display View --- */
         #projector-view {
             display: none;
@@ -681,9 +728,13 @@
     <div id="admin-view" class="container">
         <header>
             <h1>🎯 Admin Dashboard 🎯</h1>
-            <h2>Click a testimony to share it with the congregation</h2>
-            <button class="role-btn" style="padding: 10px 30px; font-size: 0.9rem; margin-top: 20px;"
-                onclick="clearProjector()">Clear Projector</button>
+            <h2>Manage testimonies and projector state</h2>
+            <div class="header-controls">
+                <button class="role-btn" style="padding: 10px 20px; font-size: 0.9rem; width: auto;"
+                    onclick="toggleRain(false)">Clear Projection</button>
+                <button class="role-btn" style="padding: 10px 20px; font-size: 0.9rem; width: auto;"
+                    onclick="toggleRain(true)">Start Rain</button>
+            </div>
         </header>
         <div id="admin-grid" class="grid">
             <!-- Cards injected via JS -->
@@ -873,6 +924,7 @@
         }
 
         // --- Logic: Admin ---
+        // --- Logic: Admin ---
         async function loadAdminData() {
             try {
                 const [testimoniesResult, activeResult] = await Promise.all([
@@ -904,8 +956,21 @@
                     card.className = `glass-panel card ${item.id == activeId ? 'active-card' : ''}`;
                     card.onclick = () => activateTestimony(item.id);
 
-                    card.innerHTML = `
-                        <button class="delete-btn" onclick="deleteTestimony(event, '${item.id}')" title="Delete">×</button>
+                    // Actions
+                    let actionsHtml = `<div class="card-actions" onclick="event.stopPropagation()">`;
+
+                    // X button only if active (to unselect)
+                    if (item.id == activeId) {
+                        actionsHtml += `<button class="action-btn btn-close" onclick="clearProjector()" title="Unselect">✕</button>`;
+                    }
+
+                    // Edit and Delete always available
+                    actionsHtml += `
+                        <button class="action-btn btn-edit" onclick="editTestimony('${item.id}')" title="Edit">✎</button>
+                        <button class="action-btn btn-delete" onclick="deleteTestimony(event, '${item.id}')" title="Delete">🗑️</button>
+                    </div>`;
+
+                    card.innerHTML = actionsHtml + `
                         <h3>${item.name}</h3>
                         <p>${item.text}</p>
                         <span class="timestamp">${item.timestamp}</span>
@@ -919,20 +984,39 @@
 
         async function activateTestimony(id) {
             try {
+                // When activating, we usually want rain to continue (or at least not stop)
+                // but just setting ID is enough as server preserves rain state
                 await apiPost('/api/active', { id });
-                loadAdminData(); // Refresh to show active styling
+                loadAdminData();
             } catch (error) {
                 console.error('Error activating testimony:', error);
             }
         }
 
+        // Toggle Rain State
+        async function toggleRain(isActive) {
+            // "Clear Projector" (Stop Rain) also clears the active testimony as per user request
+            const payload = { isRainActive: isActive };
+            if (!isActive) {
+                payload.id = null;
+            }
+
+            await apiPost('/api/active', payload);
+            loadAdminData();
+        }
+
         async function clearProjector() {
+            // This function is now used by the 'x' button to unselect the specific testimony
             try {
                 await apiPost('/api/active', { id: null });
-                loadAdminData(); // Refresh to remove active styling
+                loadAdminData();
             } catch (error) {
                 console.error('Error clearing projector:', error);
             }
+        }
+
+        function editTestimony(id) {
+            alert("Edit feature coming soon! (For now, delete and re-add)");
         }
 
         async function deleteTestimony(e, id) {
