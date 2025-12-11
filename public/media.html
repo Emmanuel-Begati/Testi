@@ -680,6 +680,28 @@
                 transform: translateX(10px);
             }
         }
+
+        /* Modal Styles Reuse */
+        #edit-modal,
+        #delete-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            animation: fadeIn 0.3s ease;
+        }
+
+        #edit-modal.show,
+        #delete-modal.show {
+            display: flex;
+        }
     </style>
 </head>
 
@@ -752,6 +774,39 @@
     </div>
 
     <div id="toast" class="toast">Sent Successfully!</div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal">
+        <div class="glass-panel password-container">
+            <h2>Edit Testimony</h2>
+            <div class="input-group" style="padding: 20px 0;">
+                <input type="hidden" id="edit-id">
+                <input type="text" id="edit-name" placeholder="Name" class="password-input"
+                    style="text-align: left; margin-bottom: 10px;">
+                <textarea id="edit-text" rows="5" placeholder="Testimony text..."
+                    style="background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: white; border-radius: 10px; padding: 15px; width: 100%;"></textarea>
+            </div>
+            <div class="password-buttons">
+                <button class="password-btn password-btn-cancel" onclick="closeEditModal()">Cancel</button>
+                <button class="password-btn password-btn-submit" onclick="saveEdit()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Delete Modal -->
+    <div id="delete-modal">
+        <div class="glass-panel password-container">
+            <span class="password-icon"
+                style="color: #ef4444; filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));">🗑️</span>
+            <h2>Delete Testimony?</h2>
+            <p>Are you sure you want to permanently delete this testimony? This cannot be undone.</p>
+            <div class="password-buttons">
+                <button class="password-btn password-btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+                <button class="password-btn password-btn-submit" style="background: #ef4444;"
+                    onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // --- State Management ---
@@ -1017,20 +1072,80 @@
             }
         }
 
+        let testimonyToDeleteId = null;
+
         function editTestimony(id) {
-            alert("Edit feature coming soon! (For now, delete and re-add)");
+            // Find testimony data
+            const card = document.querySelector(`.card[onclick*="${id}"]`);
+            // Better to pull from data attr or re-fetch, but parsing DOM is quicker for now or we can store global data
+            // Let's use the text content for now as a simple approach since we don't have the full object handy in this scope without re-fetching
+            // Actually, let's fetch individual item or find in cached list. 
+            // We'll trust the re-fetch for accuracy.
+
+            apiGet('/api/testimonies').then(res => {
+                if (res.success) {
+                    const testimony = res.data.find(t => t.id === id);
+                    if (testimony) {
+                        document.getElementById('edit-id').value = testimony.id;
+                        document.getElementById('edit-name').value = testimony.name;
+                        document.getElementById('edit-text').value = testimony.text;
+
+                        document.getElementById('edit-modal').classList.add('show');
+                    }
+                }
+            });
         }
 
-        async function deleteTestimony(e, id) {
-            e.stopPropagation();
-            if (!confirm('Delete this testimony?')) return;
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('show');
+        }
+
+        async function saveEdit() {
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('edit-name').value;
+            const text = document.getElementById('edit-text').value;
 
             try {
-                await apiDelete(`/api/testimonies/${id}`);
+                const result = await fetch(`/api/testimonies/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, text })
+                });
+
+                if (result.ok) {
+                    closeEditModal();
+                    loadAdminData();
+                    // If active, refresh projector too? Projector auto-polls, so it will update.
+                } else {
+                    alert('Failed to save changes');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error saving changes');
+            }
+        }
+
+        function deleteTestimony(e, id) {
+            e.stopPropagation();
+            testimonyToDeleteId = id;
+            document.getElementById('delete-modal').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            testimonyToDeleteId = null;
+            document.getElementById('delete-modal').classList.remove('show');
+        }
+
+        async function confirmDelete() {
+            if (!testimonyToDeleteId) return;
+
+            try {
+                await apiDelete(`/api/testimonies/${testimonyToDeleteId}`);
+                closeDeleteModal();
                 loadAdminData();
             } catch (error) {
                 console.error('Error deleting testimony:', error);
-                alert('Failed to delete testimony. Please try again.');
+                alert('Failed to delete testimony.');
             }
         }
 

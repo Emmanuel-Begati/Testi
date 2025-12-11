@@ -15,13 +15,13 @@ app.use(express.static('public'));
 async function initializeDataFiles() {
     try {
         await fs.mkdir(path.join(__dirname, 'data'), { recursive: true });
-        
+
         try {
             await fs.access(DATA_FILE);
         } catch {
             await fs.writeFile(DATA_FILE, JSON.stringify([]));
         }
-        
+
         try {
             await fs.access(ACTIVE_FILE);
         } catch {
@@ -48,29 +48,53 @@ app.get('/api/testimonies', async (req, res) => {
 app.post('/api/testimonies', async (req, res) => {
     try {
         const { name, text } = req.body;
-        
+
         if (!name || !text) {
             return res.status(400).json({ success: false, error: 'Missing name or text' });
         }
-        
+
         const data = JSON.parse(await fs.readFile(DATA_FILE, 'utf8'));
-        
+
         const newTestimony = {
             id: Date.now().toString() + Math.floor(Math.random() * 1000),
             name: name.trim(),
             text: text.trim(),
-            timestamp: new Date().toLocaleTimeString('en-US', { 
-                hour: 'numeric', 
-                minute: '2-digit', 
+            timestamp: new Date().toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
                 second: '2-digit',
-                hour12: true 
+                hour12: true
             })
         };
-        
+
         data.push(newTestimony);
         await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
-        
+
         res.json({ success: true, data: newTestimony });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update testimony
+app.put('/api/testimonies/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, text } = req.body;
+
+        let data = JSON.parse(await fs.readFile(DATA_FILE, 'utf8'));
+        const index = data.findIndex(t => t.id === id);
+
+        if (index === -1) {
+            return res.status(404).json({ success: false, error: 'Testimony not found' });
+        }
+
+        // Update fields if provided
+        if (name) data[index].name = name.trim();
+        if (text) data[index].text = text.trim();
+
+        await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
+        res.json({ success: true, data: data[index] });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -80,17 +104,17 @@ app.post('/api/testimonies', async (req, res) => {
 app.delete('/api/testimonies/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         let data = JSON.parse(await fs.readFile(DATA_FILE, 'utf8'));
         data = data.filter(item => item.id !== id);
         await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
-        
+
         // Clear active if deleted testimony was active
         const active = JSON.parse(await fs.readFile(ACTIVE_FILE, 'utf8'));
         if (active.id === id) {
             await fs.writeFile(ACTIVE_FILE, JSON.stringify({ id: null }, null, 2));
         }
-        
+
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -111,18 +135,18 @@ app.get('/api/active', async (req, res) => {
 app.post('/api/active', async (req, res) => {
     try {
         const { id, isRainActive } = req.body;
-        
+
         // Read current state first to merge if needed
         let current = {};
         try {
-             current = JSON.parse(await fs.readFile(ACTIVE_FILE, 'utf8'));
-        } catch {}
+            current = JSON.parse(await fs.readFile(ACTIVE_FILE, 'utf8'));
+        } catch { }
 
-        const active = { 
-            id: id !== undefined ? id : current.id, 
+        const active = {
+            id: id !== undefined ? id : current.id,
             isRainActive: isRainActive !== undefined ? isRainActive : (current.isRainActive !== undefined ? current.isRainActive : true)
         };
-        
+
         await fs.writeFile(ACTIVE_FILE, JSON.stringify(active, null, 2));
         res.json({ success: true, data: active });
     } catch (error) {
