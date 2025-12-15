@@ -396,9 +396,9 @@
         /* Falling Testimony Cards */
         .falling-testimony {
             position: absolute;
-            width: clamp(280px, 25vw, 450px);
-            /* Fluid width */
-            padding: clamp(15px, 2vw, 25px);
+            width: clamp(320px, 28vw, 550px);
+            /* Fluid width - larger boxes */
+            padding: clamp(20px, 3vw, 35px);
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -423,7 +423,7 @@
         }
 
         .falling-testimony p {
-            font-size: 1.3rem;
+            font-size: 2.3rem;
             /* Increased from 1.2rem */
             line-height: 1.4;
             display: -webkit-box;
@@ -537,7 +537,7 @@
         }
 
         #selected-testimony p {
-            font-size: clamp(1.2rem, 2.5vw, 2.2rem);
+            font-size: clamp(1.2rem, 4.5vw, 3.2rem);
             /* Much larger */
             line-height: 1.5;
             margin-bottom: clamp(20px, 3vw, 35px);
@@ -585,18 +585,18 @@
 
             /* Falling testimonies - horizontal layout optimized for ultra-wide */
             .falling-testimony {
-                width: clamp(220px, 18vw, 400px);
-                padding: clamp(12px, 2vh, 25px);
-                border-radius: 15px;
+                width: clamp(300px, 25vw, 500px);
+                padding: clamp(18px, 3vh, 35px);
+                border-radius: 18px;
             }
 
             .falling-testimony h3 {
-                font-size: clamp(1.4rem, 4.5vh, 2.2rem);
+                font-size: clamp(1.4rem, 6.5vh, 2.2rem);
                 margin-bottom: 8px;
             }
 
             .falling-testimony p {
-                font-size: clamp(1.2rem, 3.5vh, 1.8rem);
+                font-size: clamp(1.2rem, 5.5vh, 1.8rem);
                 -webkit-line-clamp: 3;
                 line-height: 1.35;
             }
@@ -1280,19 +1280,21 @@
                 const aspectRatio = screenWidth / screenHeight;
 
                 // Detect ultra-wide displays (aspect ratio >= 2.5:1)
-                // CSS media query uses clamp(200px, 15vw, 350px) for ultra-wide
-                // Regular displays use clamp(280px, 25vw, 450px)
+                // Use larger boxes with proper spacing
                 let calculatedWidth;
+                const minGap = 40; // Minimum gap between boxes
+
                 if (aspectRatio >= 2.5) {
-                    // Ultra-wide: use smaller cards for more lanes
-                    calculatedWidth = Math.max(200, Math.min(screenWidth * 0.15, 350));
+                    // Ultra-wide: larger cards matching CSS clamp(300px, 25vw, 500px)
+                    calculatedWidth = Math.max(300, Math.min(screenWidth * 0.25, 500));
                 } else {
-                    // Standard display
-                    calculatedWidth = Math.max(280, Math.min(screenWidth * 0.25, 450));
+                    // Standard display: clamp(320px, 28vw, 550px)
+                    calculatedWidth = Math.max(320, Math.min(screenWidth * 0.28, 550));
                 }
                 this.testimonyWidth = calculatedWidth;
 
-                this.lanes = Math.floor(screenWidth / (this.testimonyWidth + 20)); // Reduced gap requirement
+                // Calculate how many lanes can fit with proper gaps
+                this.lanes = Math.floor((screenWidth - minGap) / (this.testimonyWidth + minGap));
                 if (this.lanes < 1) this.lanes = 1;
 
                 if (!this.laneLastUsed || this.laneLastUsed.length !== this.lanes) {
