@@ -621,33 +621,36 @@
             }
         }
 
-        /* Ultra-wide Projector Responsiveness (aspect ratio ≥ 2.5:1) */
+        /* Ultra-wide Projector Responsiveness (aspect ratio ≥ 2.5:1) - optimized for 2560x960 */
         @media (min-aspect-ratio: 2.5/1) {
 
-            /* Falling testimonies - LARGE auto-height boxes for ultra-wide */
+            /* Falling testimonies - LARGE boxes for ultra-wide projector */
             .falling-testimony {
-                width: clamp(280px, 38vh, 450px);
-                min-height: 160px;
-                max-height: 55vh;
-                padding: clamp(22px, 5vh, 40px);
-                border-radius: 20px;
+                /* 45vh = ~432px on 960px screen, fits 4-5 boxes across 2560px */
+                width: clamp(320px, 45vh, 500px);
+                min-height: 200px;
+                max-height: 70vh;
+                padding: clamp(25px, 5vh, 50px);
+                border-radius: 22px;
             }
 
             .falling-testimony h3 {
-                font-size: clamp(1.8rem, 6vh, 2.8rem);
-                margin-bottom: 10px;
+                /* Large name - 5vh = ~48px on 960px screen */
+                font-size: clamp(2rem, 5vh, 3rem);
+                margin-bottom: 12px;
             }
 
             .falling-testimony p {
-                font-size: clamp(1.3rem, 5vh, 2rem);
+                /* Large text - 4vh = ~38px on 960px screen */
+                font-size: clamp(1.4rem, 4vh, 2.2rem);
                 -webkit-line-clamp: 5;
                 line-clamp: 5;
-                line-height: 1.35;
+                line-height: 1.4;
             }
 
             .falling-testimony .timestamp {
-                font-size: clamp(1.1rem, 3vh, 1.6rem);
-                margin-top: 8px;
+                font-size: clamp(1.2rem, 3vh, 1.8rem);
+                margin-top: 10px;
             }
 
             /* Selected testimony - horizontal optimized */
@@ -1328,13 +1331,13 @@
                 const aspectRatio = screenWidth / screenHeight;
 
                 // Calculate box width based on viewport HEIGHT (matching CSS clamp values)
-                // CSS uses clamp(300px, 40vh, 480px) for base size
                 let calculatedWidth;
-                const minGap = 60; // Generous gap between boxes for projector visibility
+                const minGap = 50; // Gap between boxes
 
                 if (aspectRatio >= 2.5) {
-                    // Ultra-wide: clamp(280px, 38vh, 450px)
-                    calculatedWidth = Math.max(280, Math.min(screenHeight * 0.38, 450));
+                    // Ultra-wide (e.g., 2560x960): clamp(320px, 45vh, 500px)
+                    // 45vh on 960px height = 432px width
+                    calculatedWidth = Math.max(320, Math.min(screenHeight * 0.45, 500));
                 } else if (screenWidth <= 768) {
                     // Small screens: clamp(350px, 55vh, 520px)
                     calculatedWidth = Math.max(350, Math.min(screenHeight * 0.55, 520));
@@ -1347,10 +1350,13 @@
                 }
                 this.testimonyWidth = calculatedWidth;
 
-                // Calculate how many lanes can fit with proper gaps - limit to 2-3 for visibility
+                // Calculate how many lanes can fit
                 let potentialLanes = Math.floor((screenWidth - minGap) / (this.testimonyWidth + minGap));
-                // Cap lanes at 3 max for projector to keep boxes large and readable
-                this.lanes = Math.max(1, Math.min(potentialLanes, 3));
+
+                // For ultra-wide projectors, allow up to 5 lanes to fill the screen
+                // For standard displays, cap at 3
+                const maxLanes = aspectRatio >= 2.5 ? 5 : 3;
+                this.lanes = Math.max(1, Math.min(potentialLanes, maxLanes));
 
                 if (!this.laneLastUsed || this.laneLastUsed.length !== this.lanes) {
                     this.laneLastUsed = new Array(this.lanes).fill(0);
