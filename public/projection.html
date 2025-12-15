@@ -925,8 +925,8 @@
         }
 
         function checkAuth() {
-            const auth = sessionStorage.getItem(AUTH_KEY);
-            return auth === 'authenticated';
+            return true; // auth = sessionStorage.getItem(AUTH_KEY);
+            // return auth === 'authenticated';
         }
 
         let currentPage = '';
