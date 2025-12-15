@@ -368,44 +368,11 @@
             top: 0;
             left: 0;
             overflow: hidden;
-            /* Viewport-fitting zoom - scales entire view to fill screen */
-            transform-origin: center center;
         }
 
         /* Force projector view to fill and zoom to screen */
         body.projector-mode {
             overflow: hidden;
-        }
-
-        /* Use viewport units to ensure full-screen coverage with zoom effect */
-        @media (min-width: 1200px) {
-            #projector-view {
-                transform: scale(1.1);
-            }
-        }
-
-        @media (min-width: 1600px) {
-            #projector-view {
-                transform: scale(1.2);
-            }
-        }
-
-        @media (min-width: 1920px) {
-            #projector-view {
-                transform: scale(1.3);
-            }
-        }
-
-        @media (min-width: 2560px) {
-            #projector-view {
-                transform: scale(1.5);
-            }
-        }
-
-        @media (min-width: 3840px) {
-            #projector-view {
-                transform: scale(1.8);
-            }
         }
 
         /* Show projector view immediately when in projector mode */
@@ -431,17 +398,17 @@
             opacity: 0.6;
         }
 
-        /* Falling Testimony Cards */
+        /* Falling Testimony Cards - Scaled up to fill screen */
         .falling-testimony {
             position: absolute;
-            width: clamp(320px, 28vw, 550px);
-            /* Fluid width - larger boxes */
-            padding: clamp(20px, 3vw, 35px);
+            width: clamp(380px, 35vw, 650px);
+            /* Larger fluid width to fill screen */
+            padding: clamp(25px, 4vw, 50px);
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: var(--glass-border);
-            border-radius: 20px;
+            border-radius: 24px;
             box-shadow: var(--glass-shadow);
             opacity: 0;
             pointer-events: none;
@@ -455,38 +422,40 @@
         }
 
         .falling-testimony h3 {
-            font-size: 1.8rem;
-            /* Increased from 1.5rem */
-            margin-bottom: 10px;
+            font-size: clamp(1.8rem, 2.5vw, 2.8rem);
+            /* Larger, viewport-relative */
+            margin-bottom: 12px;
             color: var(--accent-gold);
             font-weight: 600;
         }
 
         .falling-testimony p {
-            font-size: 2.3rem;
-            line-height: 1.4;
+            font-size: clamp(1.4rem, 2vw, 2rem);
+            line-height: 1.5;
             /* No line clamping - show full text */
         }
 
         .falling-testimony .timestamp {
-            font-size: 1rem;
-            margin-top: 10px;
+            font-size: clamp(1rem, 1.3vw, 1.4rem);
+            margin-top: 12px;
         }
 
-        /* Selected Testimony (Right Side) */
+        /* Selected Testimony (Right Side) - Scaled up to fill screen */
         #selected-testimony {
             position: fixed;
-            right: 5vw;
+            right: 3vw;
             top: 50%;
             transform: translateY(-50%) translateX(100%);
-            width: min(80vw, 900px);
-            /* Responsive width */
-            padding: clamp(30px, 5vw, 60px);
+            width: min(55vw, 1100px);
+            /* Larger responsive width to fill screen */
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: clamp(40px, 6vw, 80px);
             background: var(--glass-bg);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 3px solid var(--accent-gold);
-            border-radius: 30px;
+            border: 4px solid var(--accent-gold);
+            border-radius: 35px;
             box-shadow: 0 25px 80px rgba(99, 102, 241, 0.8);
             opacity: 0;
             pointer-events: none;
