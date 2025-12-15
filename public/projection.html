@@ -401,14 +401,14 @@
         /* Falling Testimony Cards - Scaled up to fill screen */
         .falling-testimony {
             position: absolute;
-            width: clamp(380px, 35vw, 650px);
+            width: clamp(420px, 40vw, 750px);
             /* Larger fluid width to fill screen */
-            padding: clamp(25px, 4vw, 50px);
+            padding: clamp(30px, 5vw, 60px);
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: var(--glass-border);
-            border-radius: 24px;
+            border-radius: 28px;
             box-shadow: var(--glass-shadow);
             opacity: 0;
             pointer-events: none;
@@ -422,40 +422,40 @@
         }
 
         .falling-testimony h3 {
-            font-size: clamp(1.8rem, 2.5vw, 2.8rem);
+            font-size: clamp(2rem, 3vw, 3.2rem);
             /* Larger, viewport-relative */
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             color: var(--accent-gold);
             font-weight: 600;
         }
 
         .falling-testimony p {
-            font-size: clamp(1.4rem, 2vw, 2rem);
+            font-size: clamp(1.6rem, 2.5vw, 2.4rem);
             line-height: 1.5;
             /* No line clamping - show full text */
         }
 
         .falling-testimony .timestamp {
-            font-size: clamp(1rem, 1.3vw, 1.4rem);
-            margin-top: 12px;
+            font-size: clamp(1.1rem, 1.5vw, 1.6rem);
+            margin-top: 14px;
         }
 
         /* Selected Testimony (Right Side) - Scaled up to fill screen */
         #selected-testimony {
             position: fixed;
-            right: 3vw;
+            right: 2vw;
             top: 50%;
             transform: translateY(-50%) translateX(100%);
-            width: min(55vw, 1100px);
+            width: min(60vw, 1200px);
             /* Larger responsive width to fill screen */
-            max-height: 90vh;
+            max-height: 92vh;
             overflow-y: auto;
-            padding: clamp(40px, 6vw, 80px);
+            padding: clamp(50px, 7vw, 100px);
             background: var(--glass-bg);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 4px solid var(--accent-gold);
-            border-radius: 35px;
+            border: 5px solid var(--accent-gold);
+            border-radius: 40px;
             box-shadow: 0 25px 80px rgba(99, 102, 241, 0.8);
             opacity: 0;
             pointer-events: none;
