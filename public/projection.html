@@ -396,9 +396,9 @@
         /* Falling Testimony Cards */
         .falling-testimony {
             position: absolute;
-            width: 450px;
-            /* Increased from 350px */
-            padding: 25px;
+            width: clamp(280px, 25vw, 450px);
+            /* Fluid width */
+            padding: clamp(15px, 2vw, 25px);
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -444,10 +444,9 @@
             right: 5vw;
             top: 50%;
             transform: translateY(-50%) translateX(100%);
-            width: 50vw;
+            width: min(80vw, 900px);
             /* Responsive width */
-            max-width: 1000px;
-            padding: 60px;
+            padding: clamp(30px, 5vw, 60px);
             background: var(--glass-bg);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
@@ -524,9 +523,9 @@
         }
 
         #selected-testimony h1 {
-            font-size: 5rem;
+            font-size: clamp(2rem, 5vw, 4.5rem);
             /* Much larger */
-            margin-bottom: 40px;
+            margin-bottom: clamp(20px, 4vw, 40px);
             background: linear-gradient(135deg, var(--accent-gold) 0%, #ffffff 50%, var(--accent-gold) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -538,10 +537,10 @@
         }
 
         #selected-testimony p {
-            font-size: 2.8rem;
+            font-size: clamp(1.2rem, 2.5vw, 2.2rem);
             /* Much larger */
             line-height: 1.5;
-            margin-bottom: 35px;
+            margin-bottom: clamp(20px, 3vw, 35px);
         }
 
         #selected-testimony .timestamp {
@@ -567,17 +566,128 @@
             }
 
             #selected-testimony {
-                width: 60vw;
-                right: 20px;
+                width: 90vw;
+                right: 5vw;
                 padding: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #selected-testimony {
+                width: 95vw;
+                right: 2.5vw;
+                padding: 20px;
+            }
+        }
+
+        /* Ultra-wide Projector Responsiveness (aspect ratio ≥ 2.5:1) */
+        @media (min-aspect-ratio: 2.5/1) {
+
+            /* Falling testimonies - horizontal layout optimized for ultra-wide */
+            .falling-testimony {
+                width: clamp(200px, 15vw, 350px);
+                padding: clamp(10px, 1.5vh, 20px);
+                border-radius: 15px;
+            }
+
+            .falling-testimony h3 {
+                font-size: clamp(0.9rem, 2.5vh, 1.4rem);
+                margin-bottom: 5px;
+            }
+
+            .falling-testimony p {
+                font-size: clamp(0.8rem, 2vh, 1.1rem);
+                -webkit-line-clamp: 3;
+                line-height: 1.3;
+            }
+
+            .falling-testimony .timestamp {
+                font-size: clamp(0.6rem, 1.5vh, 0.9rem);
+                margin-top: 5px;
+            }
+
+            /* Selected testimony - horizontal optimized */
+            #selected-testimony {
+                width: min(50vw, 1000px);
+                right: 3vw;
+                padding: clamp(20px, 4vh, 50px);
+                max-height: 85vh;
+                overflow-y: auto;
             }
 
             #selected-testimony h1 {
-                font-size: 3rem;
+                font-size: clamp(1.5rem, 8vh, 3.5rem);
+                margin-bottom: clamp(10px, 2vh, 25px);
+                letter-spacing: 2px;
             }
 
             #selected-testimony p {
-                font-size: 1.8rem;
+                font-size: clamp(1rem, 4vh, 1.8rem);
+                line-height: 1.4;
+                margin-bottom: clamp(10px, 2vh, 25px);
+            }
+
+            #selected-testimony .timestamp {
+                font-size: clamp(0.8rem, 2.5vh, 1.4rem);
+            }
+
+            /* Push rain less on ultra-wide since selected takes less space */
+            #rain-container.pushed-left {
+                transform: translateX(-100px) scale(0.9);
+                opacity: 0.7;
+            }
+
+            /* Logo sizing */
+            .page-logo {
+                width: clamp(80px, 12vh, 140px);
+                top: 15px;
+                left: 15px;
+            }
+
+            /* Watermark adjustments */
+            body::after {
+                width: 60vw;
+                height: 90vh;
+            }
+        }
+
+        /* Additional responsiveness for very short heights */
+        @media (max-height: 600px) {
+            .falling-testimony {
+                padding: 10px 15px;
+                border-radius: 12px;
+            }
+
+            .falling-testimony h3 {
+                font-size: clamp(0.8rem, 2.2vh, 1.2rem);
+            }
+
+            .falling-testimony p {
+                font-size: clamp(0.7rem, 1.8vh, 1rem);
+                -webkit-line-clamp: 2;
+            }
+
+            #selected-testimony {
+                padding: 15px 25px;
+                max-height: 90vh;
+            }
+
+            #selected-testimony h1 {
+                font-size: clamp(1.2rem, 6vh, 2.5rem);
+                margin-bottom: 10px;
+            }
+
+            #selected-testimony p {
+                font-size: clamp(0.9rem, 3vh, 1.5rem);
+                margin-bottom: 10px;
+            }
+
+            #selected-testimony .timestamp {
+                font-size: clamp(0.7rem, 2vh, 1rem);
+            }
+
+            .page-logo {
+                width: clamp(60px, 10vh, 100px);
             }
         }
 
@@ -1154,9 +1264,8 @@
                 this.activeTestimonies = new Map();
                 this.lanes = 4;
                 this.isRunning = false;
-                this.isRunning = false;
                 this.baseInterval = 2000;
-                this.testimonyWidth = 450; /* Updated Width */
+                // this.testimonyWidth will be calculated dynamically
                 this.fallDuration = 15000;
                 this.intervalId = null;
                 this.laneLastUsed = [];
@@ -1167,7 +1276,23 @@
 
             calculateLanePositions() {
                 const screenWidth = window.innerWidth;
-                this.lanes = Math.floor(screenWidth / (this.testimonyWidth + 50));
+                const screenHeight = window.innerHeight;
+                const aspectRatio = screenWidth / screenHeight;
+
+                // Detect ultra-wide displays (aspect ratio >= 2.5:1)
+                // CSS media query uses clamp(200px, 15vw, 350px) for ultra-wide
+                // Regular displays use clamp(280px, 25vw, 450px)
+                let calculatedWidth;
+                if (aspectRatio >= 2.5) {
+                    // Ultra-wide: use smaller cards for more lanes
+                    calculatedWidth = Math.max(200, Math.min(screenWidth * 0.15, 350));
+                } else {
+                    // Standard display
+                    calculatedWidth = Math.max(280, Math.min(screenWidth * 0.25, 450));
+                }
+                this.testimonyWidth = calculatedWidth;
+
+                this.lanes = Math.floor(screenWidth / (this.testimonyWidth + 20)); // Reduced gap requirement
                 if (this.lanes < 1) this.lanes = 1;
 
                 if (!this.laneLastUsed || this.laneLastUsed.length !== this.lanes) {
