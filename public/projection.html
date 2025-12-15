@@ -400,17 +400,19 @@
             opacity: 0.6;
         }
 
-        /* Falling Testimony Cards - Scaled up to fill screen */
+        /* Falling Testimony Cards - SQUARE boxes that scale inversely (bigger on smaller screens) */
         .falling-testimony {
             position: absolute;
-            width: clamp(480px, 45vw, 900px);
-            /* Larger fluid width to fill screen */
-            padding: clamp(35px, 6vw, 75px);
+            /* Square boxes - size based on viewport, inverse scaling */
+            width: clamp(180px, 28vmin, 320px);
+            height: clamp(180px, 28vmin, 320px);
+            /* Padding scales with box */
+            padding: clamp(15px, 3vmin, 30px);
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: var(--glass-border);
-            border-radius: 32px;
+            border-radius: 20px;
             box-shadow: var(--glass-shadow);
             opacity: 0;
             pointer-events: none;
@@ -419,45 +421,56 @@
             box-sizing: border-box;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            /* Let boxes grow to fit content */
-            max-height: none;
+            /* Content layout */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
         }
 
         .falling-testimony h3 {
-            font-size: clamp(2.4rem, 3.5vw, 4rem);
-            /* Larger, viewport-relative */
-            margin-bottom: 16px;
+            /* Inverse scaling: larger text on smaller screens */
+            font-size: clamp(1.4rem, 4vmin, 2rem);
+            margin-bottom: 8px;
             color: var(--accent-gold);
             font-weight: 600;
+            line-height: 1.2;
         }
 
         .falling-testimony p {
-            font-size: clamp(1.8rem, 3vw, 3rem);
-            line-height: 1.5;
-            /* No line clamping - show full text */
+            /* Inverse scaling for readability on projector */
+            font-size: clamp(1rem, 3vmin, 1.5rem);
+            line-height: 1.4;
+            /* Clamp lines to fit square box */
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .falling-testimony .timestamp {
-            font-size: clamp(1.3rem, 1.8vw, 2rem);
-            margin-top: 16px;
+            font-size: clamp(0.8rem, 2vmin, 1.1rem);
+            margin-top: auto;
+            padding-top: 8px;
         }
 
         /* Selected Testimony (Right Side) - Scaled up to fill screen */
         #selected-testimony {
             position: fixed;
-            right: 2vw;
+            right: 3vw;
             top: 50%;
             transform: translateY(-50%) translateX(100%);
-            width: min(65vw, 1400px);
-            /* Larger responsive width to fill screen */
-            max-height: 94vh;
+            width: min(50vw, 900px);
+            /* Sized to fit with zoom */
+            max-height: 75vh;
             overflow-y: auto;
-            padding: clamp(60px, 8vw, 120px);
+            padding: clamp(35px, 5vw, 70px);
             background: var(--glass-bg);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 6px solid var(--accent-gold);
-            border-radius: 45px;
+            border: 5px solid var(--accent-gold);
+            border-radius: 35px;
             box-shadow: 0 25px 80px rgba(99, 102, 241, 0.8);
             opacity: 0;
             pointer-events: none;
@@ -556,54 +569,74 @@
             font-weight: 500;
         }
 
-        /* Media Query for smaller screens (e.g. control laptop) */
+        /* Media Query for smaller screens - INVERSE scaling (LARGER on smaller screens for projector) */
         @media (max-width: 1024px) {
             .falling-testimony {
-                width: 300px;
-                padding: 15px;
+                /* Square boxes - LARGER on smaller screens */
+                width: clamp(200px, 35vmin, 380px);
+                height: clamp(200px, 35vmin, 380px);
+                padding: clamp(18px, 4vmin, 35px);
             }
 
             .falling-testimony h3 {
-                font-size: 1.2rem;
+                font-size: clamp(1.5rem, 5vmin, 2.2rem);
             }
 
             .falling-testimony p {
-                font-size: 1rem;
+                font-size: clamp(1.2rem, 4vmin, 1.8rem);
             }
 
             #selected-testimony {
                 width: 90vw;
                 right: 5vw;
-                padding: 30px;
+                padding: 35px;
             }
         }
 
         @media (max-width: 768px) {
+
+            /* Even LARGER for smaller projection windows */
+            .falling-testimony {
+                width: clamp(220px, 42vmin, 420px);
+                height: clamp(220px, 42vmin, 420px);
+                padding: clamp(20px, 5vmin, 40px);
+            }
+
+            .falling-testimony h3 {
+                font-size: clamp(1.6rem, 6vmin, 2.5rem);
+            }
+
+            .falling-testimony p {
+                font-size: clamp(1.3rem, 5vmin, 2rem);
+            }
+
             #selected-testimony {
                 width: 95vw;
                 right: 2.5vw;
-                padding: 20px;
+                padding: 25px;
             }
         }
 
         /* Ultra-wide Projector Responsiveness (aspect ratio ≥ 2.5:1) */
         @media (min-aspect-ratio: 2.5/1) {
 
-            /* Falling testimonies - horizontal layout optimized for ultra-wide */
+            /* Falling testimonies - SQUARE boxes for ultra-wide */
             .falling-testimony {
-                width: clamp(300px, 25vw, 500px);
-                padding: clamp(18px, 3vh, 35px);
+                width: clamp(200px, 30vh, 380px);
+                height: clamp(200px, 30vh, 380px);
+                padding: clamp(18px, 4vh, 35px);
                 border-radius: 18px;
             }
 
             .falling-testimony h3 {
-                font-size: clamp(1.4rem, 6.5vh, 2.2rem);
+                font-size: clamp(1.4rem, 6vh, 2.2rem);
                 margin-bottom: 8px;
             }
 
             .falling-testimony p {
-                font-size: clamp(1.2rem, 5.5vh, 1.8rem);
+                font-size: clamp(1.2rem, 5vh, 1.8rem);
                 -webkit-line-clamp: 3;
+                line-clamp: 3;
                 line-height: 1.35;
             }
 
@@ -657,20 +690,23 @@
             }
         }
 
-        /* Additional responsiveness for very short heights */
+        /* Short height screens - still SQUARE, scaled for visibility */
         @media (max-height: 600px) {
             .falling-testimony {
-                padding: 10px 15px;
+                width: clamp(140px, 25vh, 200px);
+                height: clamp(140px, 25vh, 200px);
+                padding: 12px 15px;
                 border-radius: 12px;
             }
 
             .falling-testimony h3 {
-                font-size: clamp(0.8rem, 2.2vh, 1.2rem);
+                font-size: clamp(1rem, 3.5vh, 1.4rem);
             }
 
             .falling-testimony p {
-                font-size: clamp(0.7rem, 1.8vh, 1rem);
-                -webkit-line-clamp: 2;
+                font-size: clamp(0.85rem, 2.8vh, 1.2rem);
+                -webkit-line-clamp: 3;
+                line-clamp: 3;
             }
 
             #selected-testimony {
