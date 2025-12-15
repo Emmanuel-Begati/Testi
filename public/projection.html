@@ -400,14 +400,16 @@
             opacity: 0.6;
         }
 
-        /* Falling Testimony Cards - LARGE SQUARE boxes that fill the screen */
+        /* Falling Testimony Cards - LARGE boxes that AUTO-SIZE to content */
         .falling-testimony {
             position: absolute;
-            /* LARGE square boxes - 40-50% of viewport height */
-            width: clamp(300px, 45vh, 500px);
-            height: clamp(300px, 45vh, 500px);
+            /* Large width, HEIGHT IS AUTO to fit content */
+            width: clamp(300px, 40vh, 480px);
+            /* NO fixed height - auto-size to content */
+            min-height: 200px;
+            max-height: 60vh;
             /* Generous padding for text */
-            padding: clamp(25px, 4vh, 50px);
+            padding: clamp(25px, 4vh, 45px);
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -441,10 +443,10 @@
             /* Large readable testimony text */
             font-size: clamp(1.3rem, 3.5vh, 2rem);
             line-height: 1.4;
-            /* Clamp to fit in the box */
+            /* Allow more lines to show */
             display: -webkit-box;
-            -webkit-line-clamp: 5;
-            line-clamp: 5;
+            -webkit-line-clamp: 6;
+            line-clamp: 6;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -572,10 +574,11 @@
         /* Media Query for smaller screens - LARGER boxes for projector visibility */
         @media (max-width: 1024px) {
             .falling-testimony {
-                /* LARGER square boxes on smaller screens */
-                width: clamp(320px, 50vh, 520px);
-                height: clamp(320px, 50vh, 520px);
-                padding: clamp(28px, 5vh, 55px);
+                /* LARGER width on smaller screens, auto height */
+                width: clamp(320px, 48vh, 500px);
+                min-height: 180px;
+                max-height: 65vh;
+                padding: clamp(28px, 5vh, 50px);
             }
 
             .falling-testimony h3 {
@@ -583,7 +586,7 @@
             }
 
             .falling-testimony p {
-                font-size: clamp(1.4rem, 4vh, 2.2rem);
+                font-size: clamp(1.4rem, 4.5vh, 2.2rem);
             }
 
             #selected-testimony {
@@ -597,9 +600,10 @@
 
             /* Even LARGER for smaller projection windows */
             .falling-testimony {
-                width: clamp(350px, 55vh, 550px);
-                height: clamp(350px, 55vh, 550px);
-                padding: clamp(30px, 6vh, 60px);
+                width: clamp(350px, 55vh, 520px);
+                min-height: 200px;
+                max-height: 70vh;
+                padding: clamp(30px, 6vh, 55px);
             }
 
             .falling-testimony h3 {
@@ -620,11 +624,12 @@
         /* Ultra-wide Projector Responsiveness (aspect ratio ≥ 2.5:1) */
         @media (min-aspect-ratio: 2.5/1) {
 
-            /* Falling testimonies - LARGE SQUARE boxes for ultra-wide */
+            /* Falling testimonies - LARGE auto-height boxes for ultra-wide */
             .falling-testimony {
-                width: clamp(280px, 42vh, 480px);
-                height: clamp(280px, 42vh, 480px);
-                padding: clamp(22px, 5vh, 45px);
+                width: clamp(280px, 38vh, 450px);
+                min-height: 160px;
+                max-height: 55vh;
+                padding: clamp(22px, 5vh, 40px);
                 border-radius: 20px;
             }
 
@@ -635,8 +640,8 @@
 
             .falling-testimony p {
                 font-size: clamp(1.3rem, 5vh, 2rem);
-                -webkit-line-clamp: 4;
-                line-clamp: 4;
+                -webkit-line-clamp: 5;
+                line-clamp: 5;
                 line-height: 1.35;
             }
 
@@ -690,11 +695,12 @@
             }
         }
 
-        /* Short height screens - still maintain readable squares */
+        /* Short height screens - still maintain readable boxes */
         @media (max-height: 600px) {
             .falling-testimony {
-                width: clamp(200px, 38vh, 320px);
-                height: clamp(200px, 38vh, 320px);
+                width: clamp(220px, 42vh, 340px);
+                min-height: 140px;
+                max-height: 50vh;
                 padding: 18px 22px;
                 border-radius: 16px;
             }
@@ -705,8 +711,8 @@
 
             .falling-testimony p {
                 font-size: clamp(1.1rem, 4vh, 1.6rem);
-                -webkit-line-clamp: 4;
-                line-clamp: 4;
+                -webkit-line-clamp: 5;
+                line-clamp: 5;
             }
 
             #selected-testimony {
@@ -1321,23 +1327,30 @@
                 const screenHeight = window.innerHeight;
                 const aspectRatio = screenWidth / screenHeight;
 
-                // Detect ultra-wide displays (aspect ratio >= 2.5:1)
-                // Use larger boxes with proper spacing
+                // Calculate box width based on viewport HEIGHT (matching CSS clamp values)
+                // CSS uses clamp(300px, 40vh, 480px) for base size
                 let calculatedWidth;
-                const minGap = 40; // Minimum gap between boxes
+                const minGap = 60; // Generous gap between boxes for projector visibility
 
                 if (aspectRatio >= 2.5) {
-                    // Ultra-wide: larger cards matching CSS clamp(300px, 25vw, 500px)
-                    calculatedWidth = Math.max(300, Math.min(screenWidth * 0.25, 500));
+                    // Ultra-wide: clamp(280px, 38vh, 450px)
+                    calculatedWidth = Math.max(280, Math.min(screenHeight * 0.38, 450));
+                } else if (screenWidth <= 768) {
+                    // Small screens: clamp(350px, 55vh, 520px)
+                    calculatedWidth = Math.max(350, Math.min(screenHeight * 0.55, 520));
+                } else if (screenWidth <= 1024) {
+                    // Medium screens: clamp(320px, 48vh, 500px)
+                    calculatedWidth = Math.max(320, Math.min(screenHeight * 0.48, 500));
                 } else {
-                    // Standard display: clamp(320px, 28vw, 550px)
-                    calculatedWidth = Math.max(320, Math.min(screenWidth * 0.28, 550));
+                    // Standard display: clamp(300px, 40vh, 480px)
+                    calculatedWidth = Math.max(300, Math.min(screenHeight * 0.40, 480));
                 }
                 this.testimonyWidth = calculatedWidth;
 
-                // Calculate how many lanes can fit with proper gaps
-                this.lanes = Math.floor((screenWidth - minGap) / (this.testimonyWidth + minGap));
-                if (this.lanes < 1) this.lanes = 1;
+                // Calculate how many lanes can fit with proper gaps - limit to 2-3 for visibility
+                let potentialLanes = Math.floor((screenWidth - minGap) / (this.testimonyWidth + minGap));
+                // Cap lanes at 3 max for projector to keep boxes large and readable
+                this.lanes = Math.max(1, Math.min(potentialLanes, 3));
 
                 if (!this.laneLastUsed || this.laneLastUsed.length !== this.lanes) {
                     this.laneLastUsed = new Array(this.lanes).fill(0);
