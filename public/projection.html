@@ -405,11 +405,11 @@
             position: absolute;
             /* Large width, HEIGHT IS AUTO to fit content */
             width: clamp(300px, 40vh, 480px);
-            /* NO fixed height - auto-size to content */
+            /* Min height to look like a card, but max height constrained */
             min-height: 200px;
-            max-height: 60vh;
+            max-height: 70vh;
             /* Generous padding for text */
-            padding: clamp(25px, 4vh, 45px);
+            padding: clamp(20px, 3vh, 40px);
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -417,6 +417,7 @@
             border-radius: 24px;
             box-shadow: var(--glass-shadow);
             opacity: 0;
+            /* Starts invisible for layout calc */
             pointer-events: none;
             will-change: transform, opacity;
             transform: translate3d(0, 0, 0);
@@ -428,27 +429,32 @@
             flex-direction: column;
             justify-content: center;
             overflow: hidden;
+            /* Important for scrollHeight check */
+            /* Allow height to fit content within max limits */
+            height: auto;
         }
 
         .falling-testimony h3 {
-            /* Large readable name */
-            font-size: clamp(1.8rem, 5vh, 3rem);
-            margin-bottom: 12px;
+            /* Name defaults, will be scaled in JS relative to text */
+            font-size: 1.8rem;
+            margin-bottom: 0.5em;
             color: var(--accent-gold);
             font-weight: 600;
             line-height: 1.2;
+            flex-shrink: 0;
+            /* Don't shrink name */
         }
 
         .falling-testimony p {
-            /* Large readable testimony text */
-            font-size: clamp(1.3rem, 3.5vh, 2rem);
-            line-height: 1.4;
-            /* Allow more lines to show */
-            display: -webkit-box;
-            -webkit-line-clamp: 6;
-            line-clamp: 6;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            /* Text defaults, will be scaled in JS */
+            font-size: 1.4rem;
+            line-height: 1.35;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            /* No line clamping, we resize font instead */
+            margin: 0;
+            /* REMOVE MARGIN to prevent phantom height */
         }
 
         .falling-testimony .timestamp {
@@ -1317,10 +1323,10 @@
                 this.isRunning = false;
                 this.baseInterval = 2000;
                 // this.testimonyWidth will be calculated dynamically
-                this.fallDuration = 18000; // Slower fall for larger boxes
+                this.fallDuration = 40000; // Slower fall (40s) as requested
                 this.intervalId = null;
                 this.laneLastUsed = [];
-                this.minLaneGap = 9000; // Increased gap to prevent vertical overlap
+                this.minLaneGap = 15000; // Increased gap to prevent vertical overlap with slower speed
 
                 this.calculateLanePositions();
             }
@@ -1330,9 +1336,13 @@
                 const screenHeight = window.innerHeight;
                 const aspectRatio = screenWidth / screenHeight;
 
+                // Safe margin from screen edges
+                const safeMargin = 40;
+                const availableWidth = screenWidth - (safeMargin * 2);
+
                 // Calculate box width based on viewport HEIGHT (matching CSS clamp values)
                 let calculatedWidth;
-                const minGap = 50; // Gap between boxes
+                const minGap = 40; // Gap between boxes
 
                 if (aspectRatio >= 2.5) {
                     // Ultra-wide (e.g., 2560x960): clamp(320px, 45vh, 500px)
@@ -1350,8 +1360,8 @@
                 }
                 this.testimonyWidth = calculatedWidth;
 
-                // Calculate how many lanes can fit
-                let potentialLanes = Math.floor((screenWidth - minGap) / (this.testimonyWidth + minGap));
+                // Calculate how many lanes can fit in AVAILABLE width
+                let potentialLanes = Math.floor((availableWidth - minGap) / (this.testimonyWidth + minGap));
 
                 // For ultra-wide projectors, allow up to 5 lanes to fill the screen
                 // For standard displays, cap at 3
@@ -1362,13 +1372,18 @@
                     this.laneLastUsed = new Array(this.lanes).fill(0);
                 }
 
+                // Recalculate based on actual used lanes to center them
                 const totalTestimonySpace = this.lanes * this.testimonyWidth;
-                const totalGapSpace = screenWidth - totalTestimonySpace;
-                const gapBetweenLanes = totalGapSpace / (this.lanes + 1);
+                // Remaining space is split between gaps. Total gaps = lanes - 1 internal gaps + 2 outer margins
+                // Ideally we just distribute them evenly in the available space + margin
+                const totalSpaceForGaps = screenWidth - totalTestimonySpace;
+
+                // Distribute evenly
+                const gapSize = totalSpaceForGaps / (this.lanes + 1);
 
                 this.lanePositions = [];
                 for (let i = 0; i < this.lanes; i++) {
-                    this.lanePositions[i] = gapBetweenLanes + (i * (this.testimonyWidth + gapBetweenLanes));
+                    this.lanePositions[i] = gapSize + (i * (this.testimonyWidth + gapSize));
                 }
             }
 
@@ -1451,11 +1466,21 @@
 
                 fallingCard.innerHTML = `
                     <h3>${testimony.name}</h3>
-                    <p>${testimony.text}</p>
+                    <div class="text-content" style="width:100%; height:100%; display:flex; align-items:center;">
+                         <p>${testimony.text}</p>
+                    </div>
                     <span class="timestamp">${testimony.timestamp}</span>
                 `;
 
                 this.container.appendChild(fallingCard);
+
+
+                // --- Dynamic Font Sizing Logic: Shrink to Fit ---
+                // Wait for one frame to let the element render in the DOM (invisible)
+                // so we can read its dimensions.
+                requestAnimationFrame(() => {
+                    this.adjustFontSizeToFit(fallingCard);
+                });
 
                 const creationTime = Date.now();
                 this.activeTestimonies.set(fallingCard, creationTime);
@@ -1467,6 +1492,39 @@
                         this.activeTestimonies.delete(fallingCard);
                     }
                 }, randomDuration + 1000);
+            }
+
+            adjustFontSizeToFit(card) {
+                const pTag = card.querySelector('p');
+                const h3Tag = card.querySelector('h3');
+                if (!pTag) return;
+
+                const screenHeight = window.innerHeight;
+                const textLength = pTag.innerText.length;
+
+                // Initial Heuristic to start closer to the target
+                let startFactor = 0.04; // 4vh
+                if (textLength > 400) startFactor = 0.025;
+                else if (textLength > 200) startFactor = 0.032;
+
+                // Start with a large nice font size based on heuristic
+                let fontSize = screenHeight * startFactor;
+                const minFontSize = Math.max(12, screenHeight * 0.012); // 1.2vh min limit or 12px
+
+                pTag.style.fontSize = `${fontSize}px`;
+                if (h3Tag) h3Tag.style.fontSize = `${fontSize * 1.2}px`;
+
+                // Iteratively shrink until it fits vertically
+                // Safety counter to prevent infinite loops
+                let safety = 40; // Increased for safety
+
+                // We check if scrollHeight (content) > clientHeight (box limit)
+                while ((card.scrollHeight > card.clientHeight) && fontSize > minFontSize && safety > 0) {
+                    fontSize -= 1.0; // smaller shrink step for precision
+                    pTag.style.fontSize = `${fontSize}px`;
+                    if (h3Tag) h3Tag.style.fontSize = `${fontSize * 1.2}px`;
+                    safety--;
+                }
             }
 
             pushLeft() {
